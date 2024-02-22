@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Monitoreo de Cultivo COLOMICH S.A.S - Formulario CSV</title>
+    <style>
+        body {
+            background-color: #004d00;
+            margin: 0;
+            font-family: Arial, sans-serif;
+        }
+
+        h1 {
+            background-color: #003300;
+            color: white;
+            padding: 20px;
+            margin: 0;
+        }
+
+        form {
+            background-color: #FFFFFF;
+            padding: 20px;
+            border-radius: 10px;
+            margin: 20px auto;
+            width: 80%;
+            max-width: 400px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+        }
+
+        input,
+        select {
+            width: 100%;
+            padding: 8px;
+            margin-bottom: 10px;
+            box-sizing: border-box;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+        }
+
+        button {
+            background-color: #003300;
+            color: white;
+            padding: 10px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            margin-top: 10px;
+            width: 48%; /* Cambiado a 48% para dejar espacio entre los botones */
+        }
+
+        button:hover {
+            background-color: #001a00;
+        }
+
+        #verHistorial {
+            text-align: center;
+            margin-top: 10px;
+        }
+
+        #verHistorial button {
+            background-color: #003300;
+            color: white;
+            padding: 10px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            width: 100%; /* Ajustado al 100% para ocupar el ancho completo */
+        }
+
+        #verHistorial button:hover {
+            background-color: #001a00;
+        }
+
+        #notificacion {
+            display: none;
+            background-color: #FFFFFF;
+            color: #333;
+            padding: 10px;
+            text-align: center;
+            margin-top: 10px;
+            border-radius: 5px;
+            width: fit-content;
+            margin-left: auto;
+            margin-right: auto;
+        }
+
+        @media only screen and (max-width: 600px) {
+            form {
+                width: 90%;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <h1>Monitoreo de Cultivo COLOMICH S.A.S</h1>
+
+    <div id="verHistorial">
+        <button onclick="mostrarFormulariosAnteriores()">Ver Monitoreos Anteriores</button>
+    </div>
+
+    <form id="miFormulario">
+        <label for="fecha">Seleccione la fecha de monitoreo:</label>
+        <input type="date" id="fecha" name="fecha" required>
+
+        <label for="centroProduccion">Seleccione Centro de Producción:</label>
+        <select id="centroProduccion" name="centroProduccion">
+            <option value="CPBuenosAires">CP Buenos Aires</option>
+            <option value="CPLaEsmeralda">CP La Esmeralda</option>
+            <option value="CPLaTruchera">CP La Truchera</option>
+            <option value="CPElVergel">CP El Vergel</option>
+            <option value="CPLaSiberia">CP La Siberia</option>
+        </select>
+
+        <label for="lote">Seleccione el lote a monitorear:</label>
+        <select id="lote" name="lote">
+            <option value="Lote1">Lote 1</option>
+            <option value="Lote2">Lote 2</option>
+            <option value="Lote3">Lote 3</option>
+        </select>
+
+        <button type="button" onclick="guardarMonitoreo()">Guardar Monitoreo</button>
+        <button type="button" onclick="descargarCSV()">Descargar Monitoreo</button>
+    </form>
+
+    <div id="notificacion"></div>
+
+    <script>
+        function descargarCSV() {
+            var fecha = document.getElementById('fecha').value;
+            var centroProduccion = document.getElementById('centroProduccion').value;
+            var lote = document.getElementById('lote').value;
+
+            var csvContent = "FechaMonitoreo,CentroProduccion,Lote\n" + fecha + "," + centroProduccion + "," + lote;
+
+            var blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+
+            var enlace = document.createElement("a");
+            if (navigator.msSaveBlob) {
+                navigator.msSaveBlob(blob, 'monitoreo_cultivo.csv');
+            } else {
+                var enlaceDescarga = window.URL.createObjectURL(blob);
+                enlace.href = enlaceDescarga;
+                enlace.download = 'monitoreo_cultivo.csv';
+                document.body.appendChild(enlace);
+                enlace.click();
+                document.body.removeChild(enlace);
+            }
+
+            var formulariosAnteriores = JSON.parse(localStorage.getItem('formularios')) || [];
+            formulariosAnteriores.push({ fecha, centroProduccion, lote });
+            localStorage.setItem('formularios', JSON.stringify(formulariosAnteriores));
+
+            mostrarNotificacion("¡Formulario guardado con éxito!");
+        }
+
+        function guardarMonitoreo() {
+            var fecha = document.getElementById('fecha').value;
+            var centroProduccion = document.getElementById('centroProduccion').value;
+            var lote = document.getElementById('lote').value;
+
+            var formulariosAnteriores = JSON.parse(localStorage.getItem('formularios')) || [];
+            formulariosAnteriores.push({ fecha, centroProduccion, lote });
+            localStorage.setItem('formularios', JSON.stringify(formulariosAnteriores));
+
+            mostrarNotificacion("¡Monitoreo guardado con éxito!");
+        }
+
+        function mostrarFormulariosAnteriores() {
+            window.location.href = 'historial.html';
+        }
+
+        function mostrarNotificacion(mensaje) {
+            var notificacion = document.getElementById('notificacion');
+            notificacion.innerText = mensaje;
+            notificacion.style.display = 'block';
+
+            setTimeout(function () {
+                notificacion.style.display = 'none';
+            }, 3000);
+        }
+    </script>
+
+</body>
+</html>
+
+
